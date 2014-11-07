@@ -41,7 +41,23 @@ class PushnotificationsAndroid {
 	 * Request error
 	 * @var multitype
 	 */
-	protected $error = null;
+	public $error = null;
+	
+	/**
+	 * Is development
+	 * @var boolean
+	 */
+	protected $development = false;
+	
+	/**
+	 * Init
+	 * @param string $apiKey
+	 * @param boolean $development
+	 */
+	public function __construct($apiKey, $development) {
+		$this->apiKey = $apiKey;
+		$this->development = $development;
+	}	
 	
 	/**
 	 * Add receiver registration ID
@@ -55,15 +71,33 @@ class PushnotificationsAndroid {
 	}
 	
 	/**
+	 * Reset receivers
+	 */
+	public function resetReceivers() {
+		$this->error = "";
+		$this->registrationIDs = array();
+	}
+	
+	/**
 	 * Send the request
+	 * @param boolean $title
+	 * @param boolean $message
+	 * @param string $type
 	 * @return boolean|multitype:
 	 */
-	public function send() {
+	public function send($title, $message) {
+		
+		$this->data = array_merge($this->data, {
+			"message" => $message,
+			"title" => $title	
+		});
 		
 		// Set GCM post variables (Device IDs and push payload)
 		$post = array (
 			'registration_ids' => $this->registrationIDs,
-			'data' => $this->data 
+			'dry_run' => $this->development,
+			'collapse_key' => $type, 
+			'data' => $this->data
 		);
 		
 		// Set CURL request headers (Authentication and type)
@@ -74,7 +108,7 @@ class PushnotificationsAndroid {
 		
 		// Initialize curl handle
 		$ch = curl_init ();
-		curl_setopt ( $ch, CURLOPT_URL, $requestUrl );
+		curl_setopt ( $ch, CURLOPT_URL, $this->requestUrl );
 		curl_setopt ( $ch, CURLOPT_POST, true );
 		curl_setopt ( $ch, CURLOPT_HTTPHEADER, $headers );
 		curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, true );
@@ -83,10 +117,7 @@ class PushnotificationsAndroid {
 		// Send request
 		$result = curl_exec ( $ch );
 		
-		// ------------------------------
-		// Error? Display it!
-		// ------------------------------
-		
+		// Error? Show it
 		if (curl_errno ( $ch )) {
 			$this->error = curl_error($ch);
 			curl_close ($ch);
@@ -112,6 +143,11 @@ class PushnotificationsAndroid {
 		 * ]
 		 * }
 		 */
+		if (gettype($result) === "string") {
+			$this->error = strip_tags(preg_replace( "/\r|\n/", " ", $result));
+			return false;
+		}
+		
 		$result = array_merge ( array (
 			"multicast_id" => null,
 			"success" => 0,
