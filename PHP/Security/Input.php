@@ -60,14 +60,12 @@
      */
     protected function _parse($data, $key = null, $default = null, $xssFilter = true) {
         $returnData = null;
-        if (!is_null($default)) 
-        {            
+        if (!is_null($default)) {            
             $default = HTML::chars($default);
         }
         
         //if not xss check
-        if (!$xssFilter)
-        {
+        if (!$xssFilter) {
             //Check if key is set
             if (!is_null($key))
             {
@@ -81,25 +79,20 @@
         }
         
         //If key is set return the value
-        if (!is_null($key))
-        {
-            if (isset($data[$key]))
-            {
+        if (!is_null($key)) {
+            if (isset($data[$key])) {
                 return $this->_parse($data[$key], null, $default, $xssFilter);
             }
             return $default;          
         }
         
         //If array parse child arrays
-        if (is_array($data) || is_object($data))
-        {
-            foreach ($data as $k => $s)
-            {
+        if (is_array($data) || is_object($data)) {
+            foreach ($data as $k => $s) {
                 $data[$k] = $this->_parse($s, null, $default, $xssFilter);
             }
         }
-        else
-        {
+        else {
             $data = HTML::chars($data);         
         }
         
