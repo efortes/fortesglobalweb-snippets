@@ -1,0 +1,21 @@
+    <?xml version="1.0" encoding="UTF-8"?>
+    <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+            id="nl.fortesglobalweb.scanmedia" version="0.0.1">
+        <name>Scanmedia</name>
+        <description>Scanmedia</description>
+        <license>FortesGlobalWeb.nl</license>
+        <keywords>Scan files, refresh gallery</keywords>
+		
+        <js-module src="www/ScanMedia.js" name="ScanMedia">
+            <clobbers target="ScanMedia" />
+        </js-module>
+		
+        <platform name="android">
+			<config-file target="res/xml/config.xml" parent="/*">
+				<feature name="ScanMedia">
+					<param name="android-package" value="nl.fortesglobalweb.scanmedia.ScanMedia"/>
+				</feature>
+			</config-file>
+			<source-file src="src/android/ScanMedia.java" target-dir="src/nl/fortesglobalweb/scanmedia" />
+        </platform>
+    </plugin>

@@ -1,4 +1,4 @@
 fortesglobalweb-snippets
 ========================
 
-Handy code snippeds
+Code snippets
