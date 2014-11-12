@@ -61,7 +61,7 @@
     protected function _parse($data, $key = null, $default = null, $xssFilter = true) {
         $returnData = null;
         if (!is_null($default)) {            
-            $default = HTML::chars($default);
+            $default = $this->chars($default);
         }
         
         //if not xss check
@@ -91,9 +91,8 @@
             foreach ($data as $k => $s) {
                 $data[$k] = $this->_parse($s, null, $default, $xssFilter);
             }
-        }
-        else {
-            $data = HTML::chars($data);         
+        }else {
+            $data = $this->chars($data);         
         }
         
         return $data;    
@@ -107,7 +106,7 @@
      * @param   boolean $double_encode  encode existing entities
      * @return  string
      */
-    public static function chars($value, $double_encode = TRUE, $charset = "utf-8") {
-    	return htmlspecialchars( (string) $value, ENT_QUOTES, Kohana::$charset, $double_encode);
+    public function chars($value, $doubleEncode = TRUE, $charset = "utf-8") {
+    	return htmlspecialchars( (string) $value, ENT_QUOTES, Kohana::$charset, $doubleEncode);
     }    
 }
