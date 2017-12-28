@@ -1,0 +1,5 @@
+./test/headless-test/
+--recursive
+--require ./test/babel-register
+--require ./test/setup-headless.js
+--timeout 100000
