@@ -1,6 +1,14 @@
-/*global getUrl, puppeteer, puppeteerOptions, getCredentials, loginUser*/
+/*global puppeteer, testConfig, */
 
 import _ from 'lodash';
+import {
+  getUrl,
+  loginUser,
+  logout,
+  getCredentials,
+  selectProfile,
+  setCookieWall
+} from '../../lib/headless/authentication';
 
 describe('Headless login', async () => {
   let browser = null;
@@ -10,28 +18,24 @@ describe('Headless login', async () => {
   const subscribedCredentials = getCredentials('subscribed');
 
   before(async () => {
-    browser = await puppeteer.launch(puppeteerOptions.launch);
-
+    browser = await puppeteer.launch(testConfig.launch);
     page = await browser.newPage();
-
-    if (puppeteerOptions.showLog) page.on('console', ConsoleMessage => console.log(ConsoleMessage.text));
-    await page.goto(getUrl('login'));
+    setCookieWall({ page });
+    if (testConfig.showLog) page.on('console', ConsoleMessage => console.log(ConsoleMessage.text));
   });
 
   after(async () => {
     await browser.close();
   });
 
-  beforeEach(async () => {
-    await page.goto(getUrl('login'));
-  });
-
   it('should show the login title', async () => {
+    await page.goto(getUrl('login'));
     const title = await page.evaluate(el => el.innerHTML, await page.$('h1'));
     expect(title).toBe('Inloggen');
   });
 
   it('should show the social login', async () => {
+    await page.goto(getUrl('login'));
     const socials = await page.$$eval('.social-login-component span', elements =>
       Array.from(elements, el => el.innerHTML)
     );
@@ -42,16 +46,22 @@ describe('Headless login', async () => {
 
   it('should login and redirect to the default rateplan', async () => {
     await loginUser({ page, credentials: unsubscribedCredentials });
+    await page.waitForNavigation();
     const cookies = await page.cookies();
     expect(page.url()).toContain('/onboarding/payment/activate-subscription/2-weken-videoland');
     expect(_.find(cookies, cookie => cookie.name === 'vlId')).toExist();
   });
 
-  it.skip('should logout', async () => {
-    await loginUser({ page, credentials: subscribedCredentials });
+  it('should logout', async () => {
+    await logout({ page });
+    const cookies = await page.cookies();
+    expect(_.find(cookies, cookie => cookie.name === 'vlId')).toNotExist();
   });
 
-  it.skip('should login and select a profile', async () => {
+  it('should choose a profile', async () => {
     await loginUser({ page, credentials: subscribedCredentials });
+    await selectProfile({ page });
+    const totalNavLinks = await page.$$eval('.navigation__link', elements => elements.length);
+    expect(totalNavLinks).toBe(6);
   });
 });
